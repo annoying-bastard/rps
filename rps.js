@@ -1,25 +1,16 @@
 const http = require('http');
 const url = require('url');
+const fs = require('fs');
 
 const hostname = '127.0.0.1';
 const port = 3000;
 
+var html = fs.readFileSync('./index.html', 'utf8');
+var htmlResult = fs.readFileSync('./result.html', 'utf8');
 
-function choiceChecker(userChoice, res){
-	//console.log(userChoice);
-	switch(userChoice){
-		case "rock":
-			break;
-		case "paper":
-			break;
-		case "scissors":
-			break;
-		default:
-			res.end('<a href="/?choice=rock">rock</a><br /><a href="/?choice=paper">paper</a><br /><a href="/?choice=scissors">scissors</a>');
-	}
-}
 
-//choiceChecker(userChoice);
+
+
 
 var generateComputerChoice = function(){
 	var random = Math.random();
@@ -33,29 +24,31 @@ var generateComputerChoice = function(){
 	}
 }
 
-var compare = function(choice1, choice2, res){
+
+var compare = function(choice1, choice2){
+	var result = null;
 	if(choice1 === choice2){
-		res.end("The result is a tie! <br /> <a href='/'>play again</a>");
+		result = 'The result is a tie!';
 	} else if (choice1 === "rock"){
 		if (choice2 === "scissors"){
-			res.end("Rock wins! <br /> <a href='/'>play again</a>");
+			result = 'Rock wins!'
 		} else {
-			res.end("paper wins! <br /> <a href='/'>play again</a>");
+			result = 'Paper wins!'
 		}
 	} else if (choice1 === "paper"){
 		if (choice2 === "rock"){
-			res.end("Paper wins! <br /> <a href='/'>play again</a>");
+			result = 'Paper wins!'
 		} else {
-			res.end("Scissors win! <br /> <a href='/'>play again</a>");
+			result = 'Scissors win!'
 		}
 	} else if (choice1 === "scissors"){
 		if (choice2 === "paper"){
-			res.end("Scissors win! <br /> <a href='/'>play again</a>");
+			result = 'Scissors win!'
 		} else { 
-			res.end("Rock wins! <br /> <a href='/'>play again</a>");
+			result = 'Paper wins!'
 		}
 	}
-
+	return result;
 }
 
 
@@ -64,15 +57,21 @@ var compare = function(choice1, choice2, res){
 
 
 const server = http.createServer((req, res) => {
+
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html');
   const userChoice = url.parse(req.url, true).query.choice;
-  
-  choiceChecker(userChoice, res);
-  //console.log(computerChoice);
-  var computerChoice = generateComputerChoice();
-  //console.log(computerChoice);
-  compare(userChoice, computerChoice, res);
+ 
+  	if(userChoice != undefined){	 	
+	 	var computerChoice = generateComputerChoice();
+	 	var result = compare(userChoice, computerChoice);
+	 	htmlResult = htmlResult.replace('{{result}}', result);
+	 	res.end(htmlResult);
+	}else{
+		res.end(html);
+	}
+
+ 
  
 });
 
