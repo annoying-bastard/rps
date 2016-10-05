@@ -51,25 +51,13 @@ var compare = function(choice1, choice2){
 	return result;
 }
 
-
 var computerStreak = 0;
 var playerStreak = 0;
 
 
-const server = http.createServer((req, res) => {
-
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/html');
-  const userChoice = url.parse(req.url, true).query.choice;
- 
-  	if(userChoice != undefined){	 	
-	 	var computerChoice = generateComputerChoice();
-	 	//console.log(computerChoice, userChoice);
-	 	var result = compare(userChoice, computerChoice);
-	 	
-	 	var text = null;
-
-	 	if (result === 1){
+var resultTextGenerator = function(result, computerChoice, userChoice){
+	var text = '';
+	if (result === 1){
 	 		text = 'Computer wins with their ' + computerChoice + ' against your ' +userChoice + '!';
 	 		computerStreak++;
 	 		playerStreak = 0;		
@@ -82,13 +70,32 @@ const server = http.createServer((req, res) => {
 	 		computerStreak = 0;
 	 		playerStreak = 0;
 	 	}
-	 	var streakText = '';
-	 	if (playerStreak > 0) {
+	 return text;
+
+}
+var streakTextGenerator = function(playerStreak, computerStreak){
+	var streakText = '';
+	 	if (playerStreak > 1) {
 	 		streakText = 'You have a streak of ' + playerStreak +' wins!'
-	 	} else if (computerStreak > 0){
+	 	} else if (computerStreak > 1){
 	 		streakText = 'You\'re being dominated by the comput0rs streak of ' + computerStreak + ' wins!'
 	 	}
+	 return streakText;
+}
 
+
+
+const server = http.createServer((req, res) => {
+
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/html');
+  const userChoice = url.parse(req.url, true).query.choice;
+ 
+  	if(userChoice != undefined){	 	
+	 	const computerChoice = generateComputerChoice();
+	 	var result = compare(userChoice, computerChoice);
+	 	var text = resultTextGenerator(result, computerChoice, userChoice);
+ 		var streakText = streakTextGenerator(playerStreak, computerStreak);
 	 	var finalHtmlResult = htmlResult
 	 		.replace('{{result}}', text)
 	 		.replace('{{streak}}', streakText);
