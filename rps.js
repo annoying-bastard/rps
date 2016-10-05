@@ -64,9 +64,10 @@ const server = http.createServer((req, res) => {
  
   	if(userChoice != undefined){	 	
 	 	var computerChoice = generateComputerChoice();
+	 	console.log(computerChoice, userChoice);
 	 	var result = compare(userChoice, computerChoice);
-	 	htmlResult = htmlResult.replace('{{result}}', result);
-	 	res.end(htmlResult);
+	 	var finalHtmlResult = htmlResult.replace('{{result}}', result);
+	 	res.end(finalHtmlResult);
 	}else{
 		res.end(html);
 	}
