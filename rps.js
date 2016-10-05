@@ -14,7 +14,7 @@ var htmlResult = fs.readFileSync('./result.html', 'utf8');
 
 var generateComputerChoice = function(){
 	var random = Math.random();
-	//console.log(random);
+
 	if (random <= 0.33) {
 		return "rock";
 	} else if(random <= 0.66){
@@ -53,7 +53,7 @@ var compare = function(choice1, choice2){
 
 
 
-//compare(userChoice, computerChoice);
+
 
 
 const server = http.createServer((req, res) => {
