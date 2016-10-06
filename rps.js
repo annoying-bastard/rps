@@ -29,11 +29,11 @@ var compare = function(choice1, choice2){
 		if (choice2 === "scissors"){
 			result = 0;
 		} else {
-			result = 1;
+			result = 0;
 		}
 	} else if (choice1 === "paper"){
 		if (choice2 === "rock"){
-			result = 0;
+			result = 1;
 		} else {
 			result = 1;
 		}
@@ -64,6 +64,7 @@ var resultTextGenerator = function(result, computerChoice, userChoice){
 	 		computerStreak = 0;
 	 		playerStreak = 0;
 	 	}
+
 	 return text;
 }
 
