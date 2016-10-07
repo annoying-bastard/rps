@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/annoying-bastard/rps#readme",
   "dependencies": {
+    "bootstrap": "^3.3.7",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0"
   }

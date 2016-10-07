@@ -8,10 +8,11 @@ const port = 3000;
 const hostname = '127.0.0.1';
 const savedGameMode = '';
 const app = express();
+
 app.use((req, res, next) => {
-	//console.log('middleware');
 	next();
 })
+
 app.use(cookieParser());
 
 var getGameMode = function(queryResult, req, res) {
@@ -27,21 +28,14 @@ var htmlChoice = fs.readFileSync('./index.html', 'utf8');
 var htmlResult = fs.readFileSync('./result.html', 'utf8');
 var htmlGameMode = fs.readFileSync('./gamemodechanger.html', 'utf8');
 
+
 var computerStreak = 0;
 var playerStreak = 0;
 
-var generateComputerChoice = function(){
-	var random = Math.random();
-	if (random <= 0.33) {
-		return "rock";
-	} else if(random <= 0.66){
-		return "paper";
-	} else {
-		return "scissors";
-	}
-}
 
-var compare = function(choice1, choice2){
+var gameLogic = {
+
+compare: function(choice1, choice2){
 	var result = null;
 	if(choice1 === choice2){
 		result = 2;
@@ -65,9 +59,20 @@ var compare = function(choice1, choice2){
 		}
 	}
 	return result;
-}
+},
 
-var resultTextGenerator = function(result, computerChoice, userChoice){
+generateComputerChoice: function(){
+	var random = Math.random();
+	if (random <= 0.33) {
+		return "rock";
+	} else if(random <= 0.66){
+		return "paper";
+	} else {
+		return "scissors";
+	}
+},
+
+resultTextGenerator: function(result, computerChoice, userChoice){
 	var text = '';
 	if (result === 1){
 	 		text = 'Computer wins with their ' + computerChoice + ' against your ' +userChoice + '!';
@@ -83,19 +88,25 @@ var resultTextGenerator = function(result, computerChoice, userChoice){
 	 		playerStreak = 0;
 	 	}
 	 return text;
+ },
+
+ streakTextGenerator: function(playerStreak, computerStreak){
+
+ 	var streakText = '';
+ 	 	if (playerStreak > 1) {
+ 	 		streakText = 'You have a streak of ' + playerStreak +' wins!'
+ 	 	} else if (computerStreak > 1){
+ 	 		streakText = 'You\'re being dominated by the comput0rs streak of ' + computerStreak + ' wins!'
+ 	 	}
+
+ 	 return streakText;
+ }
+
 }
 
-var streakTextGenerator = function(playerStreak, computerStreak){
 
-	var streakText = '';
-	 	if (playerStreak > 1) {
-	 		streakText = 'You have a streak of ' + playerStreak +' wins!'
-	 	} else if (computerStreak > 1){
-	 		streakText = 'You\'re being dominated by the comput0rs streak of ' + computerStreak + ' wins!'
-	 	}
 
-	 return streakText;
-}
+
 
 var getUserChoice = function(queryResult) {
 
@@ -108,7 +119,7 @@ var getUserChoice = function(queryResult) {
  	}
 
 }
-
+app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
 app.get('/', (req, res) => {
 
   res.statusCode = 200;
@@ -118,20 +129,22 @@ app.get('/', (req, res) => {
 	const gameMode = getGameMode(queryResult, req, res);
 	console.log(gameMode);
 	const userChoice = getUserChoice(queryResult);
-
+	console.log(app.on);
 
 
   if(userChoice != undefined){
-	 	const computerChoice = generateComputerChoice();
-	 	var result = compare(userChoice, computerChoice);
-	 	var text = resultTextGenerator(result, computerChoice, userChoice);
- 		var streakText = streakTextGenerator(playerStreak, computerStreak);
+	 	const computerChoice = gameLogic.generateComputerChoice();
+	 	var result = gameLogic.compare(userChoice, computerChoice);
+	 	var text = gameLogic.resultTextGenerator(result, computerChoice, userChoice);
+ 		var streakText = gameLogic.streakTextGenerator(playerStreak, computerStreak);
 	 	var finalHtmlResult = htmlResult
 	 		.replace('{{result}}', text)
 	 		.replace('{{streak}}', streakText);
 
 	 	res.end(finalHtmlResult);
+
 	}else if (gameMode != undefined){
+
 		res.end(htmlChoice);
 		userChoice = url.parse(req.url, true).query.choice;
 
@@ -140,13 +153,13 @@ app.get('/', (req, res) => {
 
 	}
 
-
 });
+
+
+app.all('*', (req, res) => {
+	res.status(404).send('piss off');
+})
 
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
-});
-
-process.on('error', function(err){
-		console.log(err);
 });
