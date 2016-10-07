@@ -1,11 +1,10 @@
 const http = require('http');
 const url = require('url');
-const fs = require('fs');
 const express = require('express');
 const cookieParser = require('cookie-parser');
-
+const exphbs = require('express-handlebars');
 const port = 3000;
-const hostname = '127.0.0.1';
+const hostname = '192.168.178.55';
 const savedGameMode = '';
 const app = express();
 
@@ -15,18 +14,9 @@ app.use((req, res, next) => {
 
 app.use(cookieParser());
 
-var getGameMode = function(queryResult, req, res) {
-	if (req.cookies.gamemode === 'bestoffive' || req.cookies.gamemode === 'bestofthree') {
-		return req.cookies.gamemode;
-	} else if (queryResult === 'bestoffive' || queryResult === 'bestofthree'){
-		res.cookie('gamemode', queryResult);
-		return queryResult;
-	}
-}
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
 
-var htmlChoice = fs.readFileSync('./index.html', 'utf8');
-var htmlResult = fs.readFileSync('./result.html', 'utf8');
-var htmlGameMode = fs.readFileSync('./gamemodechanger.html', 'utf8');
 
 
 var computerStreak = 0;
@@ -107,18 +97,29 @@ resultTextGenerator: function(result, computerChoice, userChoice){
 
 
 
+var userInterface = {
+	getUserChoice: function(queryResult) {
 
-var getUserChoice = function(queryResult) {
+		if (queryResult === 'rock' ||
+	 	 		queryResult === 'paper'||
+	 			queryResult === 'scissors') {
 
-	if (queryResult === 'rock' ||
- 	 		queryResult === 'paper'||
- 			queryResult === 'scissors') {
+	 		return queryResult;
 
- 		return queryResult;
+	 	}
+	},
 
- 	}
-
+	getGameMode: function(queryResult, req, res) {
+		if (req.cookies.gamemode === 'bestoffive' || req.cookies.gamemode === 'bestofthree') {
+			return req.cookies.gamemode;
+		} else if (queryResult === 'bestoffive' || queryResult === 'bestofthree'){
+			res.cookie('gamemode', queryResult);
+			return queryResult;
+		}
+	}
 }
+
+
 app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
 app.get('/', (req, res) => {
 
@@ -126,10 +127,8 @@ app.get('/', (req, res) => {
   res.setHeader('Content-Type', 'text/html');
 
 	const queryResult = req.query.choice;
-	const gameMode = getGameMode(queryResult, req, res);
-	console.log(gameMode);
-	const userChoice = getUserChoice(queryResult);
-	console.log(app.on);
+	const gameMode = userInterface.getGameMode(queryResult, req, res);
+	const userChoice = userInterface.getUserChoice(queryResult);
 
 
   if(userChoice != undefined){
@@ -137,19 +136,16 @@ app.get('/', (req, res) => {
 	 	var result = gameLogic.compare(userChoice, computerChoice);
 	 	var text = gameLogic.resultTextGenerator(result, computerChoice, userChoice);
  		var streakText = gameLogic.streakTextGenerator(playerStreak, computerStreak);
-	 	var finalHtmlResult = htmlResult
-	 		.replace('{{result}}', text)
-	 		.replace('{{streak}}', streakText);
 
-	 	res.end(finalHtmlResult);
+	 	res.render('result', {result: text, streak: streakText});
 
 	}else if (gameMode != undefined){
 
-		res.end(htmlChoice);
+		res.render('choice');
 		userChoice = url.parse(req.url, true).query.choice;
 
 	} else if (gameMode === undefined) {
-		res.end(htmlGameMode);
+		res.render('gamemode');
 
 	}
 
