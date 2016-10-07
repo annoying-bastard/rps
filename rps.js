@@ -1,11 +1,31 @@
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
+const express = require('express');
+const cookieParser = require('cookie-parser');
+
 const port = 3000;
 const hostname = '127.0.0.1';
+const savedGameMode = '';
+const app = express();
+app.use((req, res, next) => {
+	//console.log('middleware');
+	next();
+})
+app.use(cookieParser());
 
-var html = fs.readFileSync('./index.html', 'utf8');
+var getGameMode = function(queryResult, req, res) {
+	if (req.cookies.gamemode === 'bestoffive' || req.cookies.gamemode === 'bestofthree') {
+		return req.cookies.gamemode;
+	} else if (queryResult === 'bestoffive' || queryResult === 'bestofthree'){
+		res.cookie('gamemode', queryResult);
+		return queryResult;
+	}
+}
+
+var htmlChoice = fs.readFileSync('./index.html', 'utf8');
 var htmlResult = fs.readFileSync('./result.html', 'utf8');
+var htmlGameMode = fs.readFileSync('./gamemodechanger.html', 'utf8');
 
 var computerStreak = 0;
 var playerStreak = 0;
@@ -47,8 +67,6 @@ var compare = function(choice1, choice2){
 	return result;
 }
 
-
-
 var resultTextGenerator = function(result, computerChoice, userChoice){
 	var text = '';
 	if (result === 1){
@@ -79,13 +97,31 @@ var streakTextGenerator = function(playerStreak, computerStreak){
 	 return streakText;
 }
 
-const server = http.createServer((req, res) => {
+var getUserChoice = function(queryResult) {
+
+	if (queryResult === 'rock' ||
+ 	 		queryResult === 'paper'||
+ 			queryResult === 'scissors') {
+
+ 		return queryResult;
+
+ 	}
+
+}
+
+app.get('/', (req, res) => {
 
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html');
-  const userChoice = url.parse(req.url, true).query.choice;
 
-  	if(userChoice != undefined){
+	const queryResult = req.query.choice;
+	const gameMode = getGameMode(queryResult, req, res);
+	console.log(gameMode);
+	const userChoice = getUserChoice(queryResult);
+
+
+
+  if(userChoice != undefined){
 	 	const computerChoice = generateComputerChoice();
 	 	var result = compare(userChoice, computerChoice);
 	 	var text = resultTextGenerator(result, computerChoice, userChoice);
@@ -95,14 +131,19 @@ const server = http.createServer((req, res) => {
 	 		.replace('{{streak}}', streakText);
 
 	 	res.end(finalHtmlResult);
-	}else{
-		res.end(html);
+	}else if (gameMode != undefined){
+		res.end(htmlChoice);
+		userChoice = url.parse(req.url, true).query.choice;
+
+	} else if (gameMode === undefined) {
+		res.end(htmlGameMode);
+
 	}
 
 
 });
 
-server.listen(port, hostname, () => {
+app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
