@@ -6,6 +6,7 @@ function Session(id){
 	this.id = id;
 	this.playerStreak = 0;
 	this.computerStreak = 0;
+	this.userName = '';
 }
 
 function createSession(req, res) {

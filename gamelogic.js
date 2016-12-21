@@ -74,5 +74,7 @@ module.exports = {
    	 	}
    },
 
-
+   createGame: function(gameMode, result, session){
+     new Game (gameMode, result,session);
+   },
 }
