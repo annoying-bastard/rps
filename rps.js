@@ -10,6 +10,7 @@ const port = 3000;
 const hostname = 'localhost';
 const savedGameMode = '';
 const app = express();
+app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -84,21 +85,21 @@ var userInterface = {
 }
 
 
-app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
 app.get('/', (req, res) => {
 
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html');
 
 	const queryResult = req.query.choice;
+	const userName = req.session.userName;
 	const lang = userInterface.getLanguage(queryResult, req, res);
 	const gameMode = userInterface.getGameMode(queryResult, req, res);
 	const userChoice = userInterface.getUserChoice(queryResult);
-	const userName = req.session.userName;
+
 	if (!lang){
-		res.render('language');
+		res.render('language', {userName: req.session.userName});
 	} else if (userName === '') {
-		res.render('username');
+		res.render('username', {userName: req.session.userName});
 	} else if(userChoice != undefined){
 	 	const computerChoice = gameLogic.generateComputerChoice();
 	 	var result = gameLogic.compare(computerChoice, userChoice);
@@ -106,23 +107,23 @@ app.get('/', (req, res) => {
 		var streakText = gameLogic.streakTextGenerator(result, req.session);
 
 		if (lang === 'enEN') {
-			res.render('result', {result: text, streak: streakText});
+			res.render('result', {result: text, streak: streakText, userName: req.session.userName});
 		} else if (lang === 'deSWG', {layout: 'maindeSWG'}) {
-			res.render('resultSWG', {result: text, streak: streakText});
+			res.render('resultSWG', {result: text, streak: streakText, userName: req.session.userName});
 		}
 	} else if (gameMode != undefined){
 		var game = new Game(gameMode, result, req.session.id, 0);
 
 		if (lang === 'enEN') {
-			res.render('choice');
+			res.render('choice', {userName: req.session.userName});
 		} else if (lang === 'deSWG') {
-			res.render('choiceSWG', {layout: 'maindeSWG'});
+			res.render('choiceSWG', {layout: 'maindeSWG', userName: req.session.userName});
 		}
 	} else if (gameMode === undefined) {
 		if (lang === 'enEN') {
-			res.render('gamemode');
+			res.render('gamemode', {userName: req.session.userName});
 		} else if (lang === 'deSWG') {
-			res.render('gamemodeSWG', {layout: 'maindeSWG'});
+			res.render('gamemodeSWG', {layout: 'maindeSWG', userName: req.session.userName});
 		}
 	}
 
@@ -131,7 +132,8 @@ app.get('/', (req, res) => {
 
 app.post("/", (req, res) => {
 	req.session.userName = req.body.user.name;
-	res.render('success', {userName: req.session.userName})
+	res.render('success', {userName: req.session.userName});
+	//res.render('main'+req.cookies.lang, {userName: req.session.userName});
 })
 
 
