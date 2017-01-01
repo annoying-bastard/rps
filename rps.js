@@ -1,6 +1,7 @@
+const express = require('express');
+const app = express();
 const http = require('http');
 const url = require('url');
-const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const exphbs = require('express-handlebars');
@@ -8,9 +9,16 @@ const gameLogic = require('./gamelogic.js');
 const startSession = require('./sessions.js')
 const port = 3000;
 const hostname = 'localhost';
-const savedGameMode = '';
-const app = express();
+const savedGameMode = ''
+const server = app.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
+});
+
+const io = require('socket.io')(server);
+
+
 app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
+app.use('/socket.io', express.static('node_modules/socket.io-client/dist'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -86,7 +94,6 @@ var userInterface = {
 
 
 app.get('/', (req, res) => {
-
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html');
 
@@ -126,21 +133,18 @@ app.get('/', (req, res) => {
 			res.render('gamemodeSWG', {layout: 'maindeSWG', userName: req.session.userName});
 		}
 	}
+});
 
-
+io.on('connection', function(socket){
+	// console.log(socket);
+	// console.log(io.emit('new user'));
 });
 
 app.post("/", (req, res) => {
 	req.session.userName = req.body.user.name;
 	res.render('success', {userName: req.session.userName});
-	//res.render('main'+req.cookies.lang, {userName: req.session.userName});
 })
-
 
 app.all('*', (req, res) => {
 	res.status(404).send('piss off');
 })
-
-app.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
