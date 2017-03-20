@@ -4,6 +4,7 @@
   "description": "",
   "main": "rps.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,9 +18,13 @@
   },
   "homepage": "https://github.com/annoying-bastard/rps#readme",
   "dependencies": {
+    "body-parser": "^1.16.0",
     "bootstrap": "^3.3.7",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
-    "socket.io": "^1.7.2"
+    "express-handlebars": "^3.0.0",
+    "handlebars": "^4.0.6",
+    "socket.io": "^1.7.2",
+    "uuid": "^3.0.1"
   }
 }
