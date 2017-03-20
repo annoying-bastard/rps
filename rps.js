@@ -8,9 +8,8 @@ const exphbs = require('express-handlebars');
 const gameLogic = require('./gamelogic.js');
 const startSession = require('./sessions.js')
 const port = 3000;
-const hostname = 'localhost';
 const savedGameMode = ''
-const server = app.listen(port, hostname, () => {
+const server = app.listen(port, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
